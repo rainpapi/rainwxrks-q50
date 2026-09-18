@@ -147,14 +147,19 @@ fi
 
 if [ -f tools/epk_tool.py ] && [ -f keys/obu_cert.pem ]; then
   if ! $PY tools/epk_tool.py build build/${APK_BASE}.apk build/${APK_BASE}.epk --cert keys/obu_cert.pem; then
-    echo "  .epk wrap failed â need Python 3 + 'pip install cryptography'. The APK is still ready."
+    echo "ERROR: .epk wrap failed. Install Python 3 + cryptography."
+    exit 1
   fi
+  # Keep the repository root copy synchronized with the APK that was just built.
+  cp -f build/${APK_BASE}.epk ./${APK_BASE}.epk
+  echo "  EPK created from THIS build: ./${APK_BASE}.epk"
 else
-  echo "  skipped: keys/obu_cert.pem or tools/epk_tool.py missing â APK is ready, but no .epk was produced."
+  echo "ERROR: keys/obu_cert.pem or tools/epk_tool.py missing; cannot produce installable EPK."
+  exit 1
 fi
 
 echo ""
 echo "== VERIFY [${APP_NAME}] =="
 "$AAPT" dump badging build/${APK_BASE}.apk 2>/dev/null | grep -iE "package:|sdkVersion|native-code|launchable" || true
 "$JAR" -tf build/${APK_BASE}.apk | grep -viE "META-INF/" | head
-echo "DONE -> build/${APK_BASE}.apk"; ls -l build/${APK_BASE}.apk build/${APK_BASE}.epk 2>/dev/null || true
+echo "DONE -> build/${APK_BASE}.apk and build/${APK_BASE}.epk"; ls -l build/${APK_BASE}.apk build/${APK_BASE}.epk ./${APK_BASE}.epk 2>/dev/null || true
