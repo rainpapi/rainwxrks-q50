@@ -1,22 +1,32 @@
 name: Build RainWxrks EPK
 on: [workflow_dispatch, push]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-java@v5
-        with: { distribution: temurin, java-version: '17' }
+        with: 
+          distribution: temurin
+          java-version: '17'
+
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+        with: 
+          python-version: '3.11'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
+          yes | sdkmanager --licenses
           sdkmanager "build-tools;34.0.0" "platforms;android-34" "platform-tools"
 
       - run: pip install cryptography
       - run: bash build.sh
+
       - uses: actions/upload-artifact@v5
         with:
           name: rainwxrks-epk
