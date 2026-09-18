@@ -1,4 +1,5 @@
 name: Build APK and EPK
+
 on:
   push:
   workflow_dispatch:
@@ -6,30 +7,52 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install EPK dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cryptography
 
       - name: Make build.sh executable
         run: chmod +x build.sh
 
-      - name: Build debug APK + EPK
+      - name: Build APK + EPK
         run: ./build.sh debug
+
+      - name: Verify generated files
+        run: |
+          test -f build/rainwxrks-q50.apk
+          test -f build/rainwxrks-q50.epk
+          echo "APK:"
+          ls -lh build/rainwxrks-q50.apk
+          echo "EPK:"
+          ls -lh build/rainwxrks-q50.epk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: q50-apk
-          path: "**/*.apk"
+          path: build/rainwxrks-q50.apk
           if-no-files-found: error
 
       - name: Upload EPK
         uses: actions/upload-artifact@v4
         with:
           name: q50-epk
-          path: "**/*.epk"
+          path: build/rainwxrks-q50.epk
           if-no-files-found: error
