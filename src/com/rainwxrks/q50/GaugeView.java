@@ -12,11 +12,11 @@ public class GaugeView extends android.view.View {
     public static final float OILP_RAW_TO_PSI=145.0377f,SPEED_RAW_TO_MPH=0.621371f;
     private final float[] v=new float[64]; private final boolean[] have=new boolean[64];
     private final VehicleData data=new VehicleData(); private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); private final RectF r=new RectF();
-    private final RainUI.Listener nav; private android.graphics.Bitmap bg; private String status="";
+    private final RainUI.Listener nav; private android.graphics.Bitmap bg; private String status=""; private String driveMode="UNKNOWN";
     public GaugeView(Context c,RainUI.Listener l){super(c);nav=l;bg=RainUI.load(c,com.rainwxrks.q50.R.drawable.bg);setFocusable(true);}
     public boolean haveType(int t){return t>=0&&t<64&&have[t];} public float valueOf(int t){return t>=0&&t<64?v[t]:0f;}
     public void setValue(int t,float x){if(t>=0&&t<64){v[t]=x;have[t]=true;}}
-    public void setStatus(String s){status=s;invalidate();}
+    public void setStatus(String s){status=s;invalidate();}\n    public void setDriveMode(String mode){driveMode=mode==null?"UNKNOWN":mode;invalidate();}
     public void setExtraData(float b,boolean hb,float i,boolean hi,float vol,boolean hv){data.boostPsi=b;data.hasBoost=hb;data.iatC=i;data.hasIat=hi;data.voltage=vol;data.hasVoltage=hv;}
     public void seedDemo(){setValue(SPEED,62f/SPEED_RAW_TO_MPH);setValue(COOLANT,86f);setValue(OILT,93f);setValue(OILP,.42f);setExtraData(18.2f,true,28.9f,true,14.2f,true);status="DEMO";}
     private String f0(float x){return String.valueOf(Math.round(x));} private String f1(float x){return String.format(java.util.Locale.US,"%.1f",x);} private float f(float c){return c*9f/5f+32f;}
@@ -27,7 +27,7 @@ public class GaugeView extends android.view.View {
         int navW=RainUI.navWidth(W), left=navW+16, top=72, right=W-18, contentW=right-left;
         // RainWxrks / Q50 image header
         if(bg!=null){p.setAlpha(115);c.drawBitmap(bg,null,new RectF(left,top,right,top+74),p);p.setAlpha(255);}
-        RainUI.text(c,p,"RAINWX RKS",left+18,top+31,17,RainUI.PURPLE,true);RainUI.mono(c,p,"Q50S / INFINITI",right-106,top+31,7,RainUI.MUTED,true);
+        RainUI.text(c,p,"RAINWX RKS",left+18,top+31,17,RainUI.PURPLE,true);\n        RainUI.mono(c,p,"DRIVE MODE  "+driveMode,left+18,top+53,8,RainUI.WHITE,true);RainUI.mono(c,p,"Q50S / INFINITI",right-106,top+31,7,RainUI.MUTED,true);
         int speedTop=top+84, speedH=Math.max(175,H-speedTop-74), speedW=(int)(contentW*.55f), sideX=left+speedW+12, sideW=right-sideX;
         card(c,left,speedTop,left+speedW,speedTop+speedH);
         RainUI.mono(c,p,"CURRENT SPEED",left+20,speedTop+28,9,RainUI.PURPLE,true);

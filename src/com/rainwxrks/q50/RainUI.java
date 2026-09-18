@@ -98,5 +98,5 @@ public final class RainUI {
         if(e.getX()>=nav && y<58){l.home();return true;}
         return false;
     }
-    public interface Listener { void home(); void rain(); void performance(); void camera(); void settings(); }
+    public interface Listener { void home(); void rain(); void performance(); void camera(); void settings(); void setExhaustEnabled(boolean enabled); void setDriveMode(String mode, float raw); }
 }
