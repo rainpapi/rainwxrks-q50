@@ -19,7 +19,8 @@ public final class ExhaustSound {
     private volatile boolean running;
     private volatile boolean enabled;
     private volatile float rpm;
-    private volatile float throttle;\n    private volatile float modeGain = 1.0f;
+    private volatile float throttle;
+    private volatile float modeGain = 1.0f;
     private double phase;
     private double noiseState;
 
@@ -52,7 +53,12 @@ public final class ExhaustSound {
         rpm = clamp(value, 0f, 8000f);
     }
 
-    public void setModeGain(float value) {\n        if (Float.isNaN(value) || Float.isInfinite(value)) return;\n        modeGain = clamp(value, 0.5f, 1.5f);\n    }\n\n    public void setThrottle(float value) {
+    public void setModeGain(float value) {
+        if (Float.isNaN(value) || Float.isInfinite(value)) return;
+        modeGain = clamp(value, 0.5f, 1.5f);
+    }
+
+    public void setThrottle(float value) {
         if (Float.isNaN(value) || Float.isInfinite(value)) return;
         float t = value <= 1.5f ? value * 100f : value;
         throttle = clamp(t, 0f, 100f);

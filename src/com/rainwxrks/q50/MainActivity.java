@@ -23,7 +23,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     private int boostType=-1, iatType=-1, voltageType=-1, rpmType=-1, driveModeType=-1;
     private boolean registered=false;
     private boolean exhaustEnabled=false;
-    private ExhaustSound exhaustSound;\n    private int driveMode=DriveMode.UNKNOWN;\n    private float driveModeRaw=Float.NaN;
+    private ExhaustSound exhaustSound;
+    private int driveMode=DriveMode.UNKNOWN;
+    private float driveModeRaw=Float.NaN;
 
     @Override protected void onCreate(Bundle b){
         super.onCreate(b); getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -34,7 +36,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final RainUI.Listener nav=new RainUI.Listener(){
         public void home(){showHome();} public void rain(){showRainCheck();} public void performance(){showPerformance();}
         public void camera(){showCamera();} public void settings(){showSettings();}
-        public void setExhaustEnabled(boolean enabled){exhaustEnabled=enabled;if(exhaustSound!=null)exhaustSound.setEnabled(enabled);}\n        public void setDriveMode(String mode,float raw){if(settings!=null)settings.setDriveMode(mode,raw);}
+        public void setExhaustEnabled(boolean enabled){exhaustEnabled=enabled;if(exhaustSound!=null)exhaustSound.setEnabled(enabled);}
+        public void setDriveMode(String mode,float raw){if(settings!=null)settings.setDriveMode(mode,raw);}
     };
     private void showHome(){
         if(home==null)home=new GaugeView(this,nav); setContentView(home);
@@ -65,7 +68,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         if(name.contains("boost")||name.contains("turbo"))boostType=s.getType();
         if(name.contains("iat")||name.contains("intake air")||name.contains("intake_air"))iatType=s.getType();
         if(name.contains("battery voltage")||name.contains("system voltage")||name.contains("charging voltage"))voltageType=s.getType();
-        if(name.contains("rpm")||name.contains("engine speed")||name.contains("engine rpm"))rpmType=s.getType();\n        if(name.contains("drive mode")||name.contains("driving mode")||name.contains("infiniti mode"))driveModeType=s.getType();
+        if(name.contains("rpm")||name.contains("engine speed")||name.contains("engine rpm"))rpmType=s.getType();
+        if(name.contains("drive mode")||name.contains("driving mode")||name.contains("infiniti mode"))driveModeType=s.getType();
     }
     private void updateExtraData(){if(home==null)return;
         boolean hb=boostType>=0&&boostType<64&&home.haveType(boostType), hi=iatType>=0&&iatType<64&&home.haveType(iatType), hv=voltageType>=0&&voltageType<64&&home.haveType(voltageType);
