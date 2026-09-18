@@ -1,34 +1,15 @@
-# Gradle files
-.gradle/
+# build artifacts
 build/
-
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
+_selftest/
+__pycache__/
 *.apk
-output-metadata.json
+*.epk
 
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
+# app signing key — each builder generates their own
+keystore.ks
 
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
-# Android Profiling
-*.hprof
+# key material: publish ONLY the public OBU cert (needed to BUILD an .epk).
+# NEVER the private key (obu_key.pem) or the firmware p12.
+keys/*
+!keys/obu_cert.pem
+!keys/README.md
