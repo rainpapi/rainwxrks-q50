@@ -1,30 +1,52 @@
 package com.rainwxrks.q50;
 
 /**
- * Shared vehicle values used by the V2 screens.
- * Sensor plumbing remains in MainActivity; this class only provides a clean
- * place for the UI to read the latest values.
+ * Normalized vehicle data shared by the UI and data layer.
+ *
+ * A field is valid only when its corresponding hasX flag is true.
+ * No demo/default vehicle values belong here.
  */
 public final class VehicleData {
-    public float speedMph;
-    public float boostPsi;
-    public float iatC;
-    public float coolant;
-    public float oilTemp;
-    public float oilPressurePsi;
-    public float throttle;
-    public float voltage;
+    public float speedRaw;
     public boolean hasSpeed;
-    public boolean hasBoost;
-    public boolean hasIat;
+
+    public float coolantC;
     public boolean hasCoolant;
+
+    public float oilTempC;
     public boolean hasOilTemp;
+
+    public float oilPressureRaw;
     public boolean hasOilPressure;
+
+    public float throttleRaw;
     public boolean hasThrottle;
+
+    public float rpm;
+    public boolean hasRpm;
+
+    public float boostPsi;
+    public boolean hasBoost;
+
+    public float iatC;
+    public boolean hasIat;
+
+    public float voltage;
     public boolean hasVoltage;
 
-    public void reset() {
-        speedMph = boostPsi = iatC = coolant = oilTemp = oilPressurePsi = throttle = voltage = 0f;
-        hasSpeed = hasBoost = hasIat = hasCoolant = hasOilTemp = hasOilPressure = hasThrottle = hasVoltage = false;
+    public float mapKpa;
+    public boolean hasMap;
+
+    public float driveModeRaw;
+    public boolean hasDriveMode;
+
+    public boolean live;
+
+    public void clear() {
+        speedRaw = coolantC = oilTempC = oilPressureRaw = throttleRaw = rpm = 0f;
+        boostPsi = iatC = voltage = mapKpa = driveModeRaw = 0f;
+        hasSpeed = hasCoolant = hasOilTemp = hasOilPressure = hasThrottle = false;
+        hasRpm = hasBoost = hasIat = hasVoltage = hasMap = hasDriveMode = false;
+        live = false;
     }
 }
