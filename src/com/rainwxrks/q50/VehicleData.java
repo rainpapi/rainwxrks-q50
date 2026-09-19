@@ -1,10 +1,10 @@
 package com.rainwxrks.q50;
 
 /**
- * Normalized vehicle data shared by the UI and data layer.
+ * Normalized live vehicle data.
  *
- * A field is valid only when its corresponding hasX flag is true.
- * No demo/default vehicle values belong here.
+ * A field is usable only when its hasX flag is true.
+ * There are intentionally no demo/default vehicle values.
  */
 public final class VehicleData {
     public float speedRaw;
@@ -16,7 +16,7 @@ public final class VehicleData {
     public float oilTempC;
     public boolean hasOilTemp;
 
-    public float oilPressureRaw;
+    public float oilPressurePsi;
     public boolean hasOilPressure;
 
     public float throttleRaw;
@@ -34,6 +34,12 @@ public final class VehicleData {
     public float voltage;
     public boolean hasVoltage;
 
+    public float transmissionTempC;
+    public boolean hasTransmissionTemp;
+
+    public float fuelPercent;
+    public boolean hasFuel;
+
     public float mapKpa;
     public boolean hasMap;
 
@@ -43,10 +49,14 @@ public final class VehicleData {
     public boolean live;
 
     public void clear() {
-        speedRaw = coolantC = oilTempC = oilPressureRaw = throttleRaw = rpm = 0f;
-        boostPsi = iatC = voltage = mapKpa = driveModeRaw = 0f;
-        hasSpeed = hasCoolant = hasOilTemp = hasOilPressure = hasThrottle = false;
-        hasRpm = hasBoost = hasIat = hasVoltage = hasMap = hasDriveMode = false;
+        speedRaw = coolantC = oilTempC = oilPressurePsi = 0f;
+        throttleRaw = rpm = boostPsi = iatC = voltage = 0f;
+        transmissionTempC = fuelPercent = mapKpa = driveModeRaw = 0f;
+
+        hasSpeed = hasCoolant = hasOilTemp = hasOilPressure = false;
+        hasThrottle = hasRpm = hasBoost = hasIat = false;
+        hasVoltage = hasTransmissionTemp = hasFuel = false;
+        hasMap = hasDriveMode = false;
         live = false;
     }
 }

@@ -10,10 +10,11 @@ import android.os.Bundle;
 import android.view.WindowManager;
 
 /**
- * RainWxrks Q50 controller.
+ * RAINWX RKS Q50 controller.
  *
- * Vehicle values now flow through VehicleDataManager instead of being
- * discovered and interpreted directly inside the UI controller.
+ * Camera functionality is intentionally removed from the controller.
+ * Vehicle values are supplied only when a real exposed vehicle source exists.
+ * No demo/fake vehicle values are generated.
  */
 public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager sm;
@@ -21,15 +22,10 @@ public class MainActivity extends Activity implements SensorEventListener {
     private RainCheckView rainCheck;
     private PerformanceView performance;
     private SettingsView settings;
-    private CameraView camera;
     private DiagnosticManager diagnostics;
-
     private VehicleDataManager vehicleData;
-    private boolean registered = false;
 
-    private boolean exhaustEnabled = false;
-    private ExhaustSound exhaustSound;
-
+    private boolean registered;
     private int driveMode = DriveMode.UNKNOWN;
     private float driveModeRaw = Float.NaN;
 
@@ -39,8 +35,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         diagnostics = new DiagnosticManager(sm);
-        exhaustSound = new ExhaustSound();
-
         vehicleData = new VehicleDataManager();
 
         showHome();
@@ -48,18 +42,24 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     private final RainUI.Listener nav = new RainUI.Listener() {
-        public void home() { showHome(); }
-        public void rain() { showRainCheck(); }
-        public void performance() { showPerformance(); }
-        public void camera() { showCamera(); }
-        public void settings() { showSettings(); }
+        @Override public void home() { showHome(); }
+        @Override public void rain() { showRainCheck(); }
+        @Override public void performance() { showPerformance(); }
 
-        public void setExhaustEnabled(boolean enabled) {
-            exhaustEnabled = enabled;
-            if (exhaustSound != null) exhaustSound.setEnabled(enabled);
+        /*
+         * Kept only for source compatibility with an older RainUI.Listener.
+         * Camera navigation is deliberately disabled and no CameraView is
+         * created or referenced by this app.
+         */
+        @Override public void camera() { }
+
+        @Override public void settings() { showSettings(); }
+
+        @Override public void setExhaustEnabled(boolean enabled) {
+            // Exhaust Note was removed because it was synthetic, not vehicle data.
         }
 
-        public void setDriveMode(String mode, float raw) {
+        @Override public void setDriveMode(String mode, float raw) {
             if (settings != null) settings.setDriveMode(mode, raw);
         }
     };
@@ -67,26 +67,17 @@ public class MainActivity extends Activity implements SensorEventListener {
     private void showHome() {
         if (home == null) home = new GaugeView(this, nav);
         setContentView(home);
-
-        if (performance != null && vehicleData != null) {
-            VehicleData d = vehicleData.getData();
-            performance.setSpeed(
-                    d.hasSpeed ? d.speedRaw * GaugeView.SPEED_RAW_TO_MPH : 0f,
-                    d.hasSpeed
-            );
-        }
-
         pushVehicleDataToUi();
     }
 
     private void showRainCheck() {
         if (rainCheck == null) {
             rainCheck = new RainCheckView(this, nav, new RainCheckView.Listener() {
-                public void onScan() {
+                @Override public void onScan() {
                     rainCheck.setResult(diagnostics.scan(), 0);
                 }
 
-                public void onClear() {
+                @Override public void onClear() {
                     rainCheck.setResult(diagnostics.clearCodes(), 0);
                 }
             });
@@ -98,11 +89,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         if (performance == null) performance = new PerformanceView(this, nav);
         setContentView(performance);
         pushVehicleDataToUi();
-    }
-
-    private void showCamera() {
-        if (camera == null) camera = new CameraView(this, nav);
-        setContentView(camera);
     }
 
     private void showSettings() {
@@ -119,12 +105,9 @@ public class MainActivity extends Activity implements SensorEventListener {
             vehicleData.register(sm, this);
             registered = true;
 
-            if (home != null) {
-                home.setStatus(vehicleData.getStatus());
-            }
-
+            if (home != null) home.setStatus(vehicleData.getStatus());
             pushVehicleDataToUi();
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
             registered = false;
             if (home != null) home.setStatus("VEHICLE DATA UNAVAILABLE");
         }
@@ -139,8 +122,11 @@ public class MainActivity extends Activity implements SensorEventListener {
             if (d.hasSpeed) home.setValue(GaugeView.SPEED, d.speedRaw);
             if (d.hasCoolant) home.setValue(GaugeView.COOLANT, d.coolantC);
             if (d.hasOilTemp) home.setValue(GaugeView.OILT, d.oilTempC);
-            if (d.hasOilPressure) home.setValue(GaugeView.OILP, d.oilPressureRaw);
+            if (d.hasOilPressure) home.setValue(GaugeView.OILP, d.oilPressurePsi);
+            if (d.hasRpm) home.setValue(GaugeView.RPM, d.rpm);
             if (d.hasThrottle) home.setValue(GaugeView.THROTTLE, d.throttleRaw);
+            if (d.hasTransmissionTemp) home.setValue(GaugeView.TRANS_TEMP, d.transmissionTempC);
+            if (d.hasFuel) home.setValue(GaugeView.FUEL, d.fuelPercent);
 
             home.setExtraData(
                     d.hasBoost ? d.boostPsi : 0f, d.hasBoost,
@@ -155,9 +141,6 @@ public class MainActivity extends Activity implements SensorEventListener {
                 if (settings != null) {
                     settings.setDriveMode(DriveMode.name(driveMode), driveModeRaw);
                 }
-                if (exhaustSound != null) {
-                    exhaustSound.setModeGain(DriveMode.soundGain(driveMode));
-                }
             }
 
             home.invalidate();
@@ -169,29 +152,15 @@ public class MainActivity extends Activity implements SensorEventListener {
                     d.hasSpeed
             );
         }
-
-        if (exhaustSound != null) {
-            if (d.hasRpm) exhaustSound.setRpm(d.rpm);
-            if (d.hasThrottle) exhaustSound.setThrottle(d.throttleRaw);
-        }
     }
 
     @Override protected void onResume() {
         super.onResume();
-
-        if (sm != null && !registered) {
-            registerVehicleData();
-        }
-
-        if (exhaustSound != null) {
-            exhaustSound.setEnabled(exhaustEnabled);
-        }
+        if (sm != null && !registered) registerVehicleData();
     }
 
     @Override protected void onPause() {
         super.onPause();
-
-        if (exhaustSound != null) exhaustSound.setEnabled(false);
 
         if (vehicleData != null && sm != null) {
             vehicleData.unregister(sm, this);
@@ -202,18 +171,14 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override public void onSensorChanged(SensorEvent e) {
         try {
-            if (vehicleData != null) {
-                vehicleData.onSensorChanged(e);
-            }
+            if (vehicleData != null) vehicleData.onSensorChanged(e);
 
-            // Keep the accelerometer path for the performance G-force display.
             if (performance != null
                     && e != null
                     && e.sensor != null
                     && e.sensor.getType() == Sensor.TYPE_ACCELEROMETER
                     && e.values != null
                     && e.values.length >= 2) {
-
                 float gx = e.values[0] / 9.80665f;
                 float gy = e.values[1] / 9.80665f;
                 performance.setGForce(gx, gy);
@@ -224,11 +189,10 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     }
 
-    @Override public void onAccuracyChanged(Sensor s, int a) {
+    @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     @Override protected void onDestroy() {
-        if (exhaustSound != null) exhaustSound.release();
         super.onDestroy();
     }
 }
